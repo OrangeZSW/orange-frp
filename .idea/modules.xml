@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/frpc.iml" filepath="$PROJECT_DIR$/frpc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/frpc-admin.iml" filepath="$PROJECT_DIR$/frpc-admin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/frpc-node.iml" filepath="$PROJECT_DIR$/frpc-node.iml" />
+    </modules>
+  </component>
+</project>
