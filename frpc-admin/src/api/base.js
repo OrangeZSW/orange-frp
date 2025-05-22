@@ -44,4 +44,3 @@
     export function deleteConfig(id) {
         return axios.delete(`/configs/${id}`)
     }
-
