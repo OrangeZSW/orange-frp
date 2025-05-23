@@ -4,7 +4,6 @@ import App from './App.vue'
 import router from "./util/router/router.js";
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-
 createApp(App)
     .use(ElementPlus)
     .use(router)

@@ -3,6 +3,7 @@ import path from 'path'
 import { randomUUID } from 'crypto'
 import { promises as fs } from 'fs'
 import { spawn } from 'child_process'
+import Result from './common/Result.js'
 
 //拦截器
 const interceptor = (req, res, next) => {
@@ -43,26 +44,25 @@ async function writeConfigs(configs) {
 }
 
 // 启动 frpc
-app.post('/api/start', (req, res) => {
+app.post('/start', (req, res) => {
     const { remotePort, serverAddr, serverPort, token, localIp, localPort, type } = req.body
 
     if (!remotePort) return res.status(400).json({ error: '缺少 remotePort 参数' })
     if (frpcProcesses.has(remotePort)) return res.status(400).json({ error: '该配置已启动' })
 
-    // TODO: 这里你要根据参数动态生成配置文件或者配置内容，暂用示例 config 文件路径
     // 例如写一个临时 ini 配置文件：
     const configContent = `
-[common]
-server_addr = ${serverAddr}
-server_port = ${serverPort}
-token = ${token}
-
-[${remotePort}]
-type = ${type}
-local_ip = ${localIp}
-local_port = ${localPort}
-remote_port = ${remotePort}
-  `.trim()
+        [common]
+        server_addr = ${serverAddr}
+        server_port = ${serverPort}
+        token = ${token}
+        
+        [${remotePort}]
+        type = ${type}
+        local_ip = ${localIp}
+        local_port = ${localPort}
+        remote_port = ${remotePort}
+          `.trim()
 
     // 临时配置文件路径，建议用 remotePort 命名，防止冲突
     const tmpConfigPath = path.resolve(`./frpc_${remotePort}.ini`)
@@ -97,75 +97,80 @@ remote_port = ${remotePort}
                 fs.unlink(tmpConfigPath).catch(() => {})
             })
 
-            res.json({ message: '启动成功' })
+            res.json(Result.success('已启动'))
         })
         .catch(err => {
             console.error('写配置文件失败:', err)
-            res.status(500).json({ error: '启动失败：写配置文件失败' })
+            res.json(Result.error('写配置文件失败'))
         })
 })
 
 // 停止 frpc
-app.post('/api/stop', (req, res) => {
+app.post('/stop', (req, res) => {
     const { remotePort } = req.body
     if (!remotePort) return res.status(400).json({ error: '缺少 remotePort 参数' })
 
     const proc = frpcProcesses.get(remotePort)
-    if (!proc) return res.status(400).json({ error: '该配置未运行' })
+    if (!proc) return res.json(Result.error('该配置未运行'))
 
     proc.kill()
     frpcProcesses.delete(remotePort)
     frpcLogs.delete(remotePort)
-    res.json({ message: '已停止' })
+    res.json(Result.success('已停止'))
 })
 
 // 查询运行状态
-app.get('/api/status', (req, res) => {
+app.get('/status', (req, res) => {
     const remotePort = req.query.remotePort
     if (remotePort) {
-        res.json({ running: frpcProcesses.has(remotePort) })
+        const proc = frpcProcesses.get(remotePort)
+        if (!proc) {
+            res.json(Result.success({running: false}))
+        } else {
+            res.json(Result.success({running: true}))
+        }
     } else {
-        res.json({ runningPorts: Array.from(frpcProcesses.keys()) })
+        res.json(Result.success(Array.from(frpcProcesses.keys())))
     }
 })
 
 // 获取日志
-app.get('/api/logs', (req, res) => {
+app.get('/logs', (req, res) => {
     const remotePort = req.query.remotePort
     if (!remotePort) return res.status(400).json({ error: '缺少 remotePort 参数' })
 
     const log = frpcLogs.get(remotePort)
     if (!log) return res.status(404).json({ error: '未找到日志' })
 
-    res.json({ logs: log })
+    res.json(Result.success(log))
 })
 
 // 查询所有配置
-app.get('/api/configs', async (req, res) => {
+app.get('/configs', async (req, res) => {
     try {
         const configs = await readConfigs()
-        res.json(configs)
+        res.json(Result.success(configs))
     } catch (e) {
-        res.status(500).json({ error: '读取配置失败' })
+        res.json(Result.error('读取配置失败'))
     }
 })
 
 // 新增配置
-app.post('/api/configs', async (req, res) => {
+app.post('/configs', async (req, res) => {
     console.log("configs add {}", req.body)
     try {
         const configs = await readConfigs()
         const newConfig = { id: randomUUID(), ...req.body }
         configs.push(newConfig)
         await writeConfigs(configs)
-        res.status(201).json(newConfig)
+        res.json(Result.success(newConfig))
     } catch (e) {
-        res.status(500).json({ error: '新增配置失败' })
+        res.json(Result.error('新增配置失败'))
     }
 })
 
 // 更新配置
-app.put('/api/configs/:id', async (req, res) => {
+app.put('/configs/:id', async (req, res) => {
     try {
         const configs = await readConfigs()
         const idx = configs.findIndex(c => c.id === req.params.id)
@@ -173,14 +178,14 @@ app.put('/api/configs/:id', async (req, res) => {
 
         configs[idx] = { ...configs[idx], ...req.body }
         await writeConfigs(configs)
-        res.json(configs[idx])
+        res.json(Result.success(configs[idx]))
     } catch (e) {
-        res.status(500).json({ error: '更新配置失败' })
+        res.json(Result.error('更新配置失败'))
     }
 })
 
 // 删除配置
-app.delete('/api/configs/:id', async (req, res) => {
+app.delete('/configs/:id', async (req, res) => {
     try {
         let configs = await readConfigs()
         const idx = configs.findIndex(c => c.id === req.params.id)
@@ -188,9 +193,9 @@ app.delete('/api/configs/:id', async (req, res) => {
 
         const deleted = configs.splice(idx, 1)
         await writeConfigs(configs)
-        res.json(deleted[0])
+        res.json(Result.success(deleted[0]))
     } catch (e) {
-        res.status(500).json({ error: '删除配置失败' })
+        res.json(Result.error('删除配置失败'))
     }
 })
 

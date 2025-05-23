@@ -1,78 +1,84 @@
 <template>
-  <div class="p-6 " style="width: 90vw ;display: flex; flex-wrap: wrap" >
-    <h1 style="width: 100vw;height: 5vh"  class="text-3xl font-bold mb-6 text-center text-blue-700">frpc 管理面板</h1>
 
-    <!-- 添加配置区域 -->
-    <el-card style="width: 40%" class="bg-white rounded-xl shadow-md p-6 mb-6">
-      <el-form label-width="auto">
-        <el-form-item label="frps IP 地址">
-          <el-input v-model="form.serverAddr" placeholder="请输入 frps IP 地址" />
-        </el-form-item>
-        <el-form-item label="frps 端口">
-          <el-input v-model="form.serverPort" placeholder="请输入 frps 端口" />
-        </el-form-item>
-        <el-form-item label="frps 令牌">
-          <el-input v-model="form.token" placeholder="请输入 frps 令牌" />
-        </el-form-item>
-        <el-form-item label="本地服务 IP">
-          <el-input v-model="form.localIp" placeholder="请输入本地服务 IP" />
-        </el-form-item>
-        <el-form-item label="本地端口">
-          <el-input v-model=" form.localPort" placeholder="请输入本地端口" />
-        </el-form-item>
-        <el-form-item label="远程端口">
-          <el-input v-model="form.remotePort" placeholder="请输入远程端口" />
-        </el-form-item>
-        <el-form-item label="协议类型">
-          <el-select v-model="form.type" placeholder="请选择协议类型">
-            <el-option label="tcp" value="tcp" />
-            <el-option label="http" value="http" />
-            <el-option label="https" value="https" />
-            <el-option label="stcp" value="stcp" />
-            <el-option label="xtcp" value="xtcp" />
-          </el-select>
-       </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleAddConfig">添加配置</el-button>
-        </el-form-item>
-        <el-form-item>
-        </el-form-item>
-      </el-form>
-    </el-card>
+    <el-page-header :title="lang.title">
+    </el-page-header>
+    <el-main>
+       <div style="display: flex">
+         <!-- 添加配置区域 -->
+         <el-card>
+           <el-form label-width="auto">
+             <el-form-item label="frps IP 地址">
+               <el-input v-model="form.serverAddr" placeholder="请输入 frps IP 地址" />
+             </el-form-item>
+             <el-form-item label="frps 端口">
+               <el-input v-model="form.serverPort" placeholder="请输入 frps 端口" />
+             </el-form-item>
+             <el-form-item label="frps 令牌">
+               <el-input v-model="form.token" placeholder="请输入 frps 令牌" />
+             </el-form-item>
+             <el-form-item label="本地服务 IP">
+               <el-input v-model="form.localIp" placeholder="请输入本地服务 IP" />
+             </el-form-item>
+             <el-form-item label="本地端口">
+               <el-input v-model=" form.localPort" placeholder="请输入本地端口" />
+             </el-form-item>
+             <el-form-item label="远程端口">
+               <el-input v-model="form.remotePort" placeholder="请输入远程端口" />
+             </el-form-item>
+             <el-form-item label="协议类型">
+               <el-select v-model="form.type" placeholder="请选择协议类型">
+                 <el-option label="tcp" value="tcp" />
+                 <el-option label="http" value="http" />
+                 <el-option label="https" value="https" />
+                 <el-option label="stcp" value="stcp" />
+                 <el-option label="xtcp" value="xtcp" />
+               </el-select>
+             </el-form-item>
+             <el-form-item>
+               <el-button type="primary" @click="handleAddConfig">{{getTranslate("添加配置")}}</el-button>
+               <el-button type="warning" @click="loadConfigs">{{getTranslate("加载")}}</el-button>
+               <el-button type="success" @click="refreshStatus">{{getTranslate("刷新")}}</el-button>
+             </el-form-item>
+             <el-form-item>
+             </el-form-item>
+           </el-form>
+         </el-card>
 
-    <!-- 配置卡片列表 -->
-    <el-card style="width: 59%">
-      <el-table width="400" table-layout="auto"  style="margin-top: 20px" :data="frpcList">
-        <el-table-column prop="serverAddr" label="frps IP 地址" />
-        <el-table-column prop="serverPort" label="frps 端口" />
-        <el-table-column prop="localIp" label="本地服务 IP" />
-        <el-table-column prop="localPort" label="本地端口" />
-        <el-table-column prop="remotePort" label="远程端口" />
-        <el-table-column label="状态">
-          <template v-slot="scope">
-            <span v-if="scope.row.status === '运行中'" class="text-green-500">{{ scope.row.status }}</span>
-            <span v-else-if="scope.row.status === '未运行'" class="text-red-500">{{ scope.row.status }}</span>
-            <span v-else>{{ scope.row.status }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column width="150" label="操作">
-          <template style="display: flex ; " v-slot="scope">
-            <el-button @click="handleEditConfig(scope.row)" class="btn-primary">编辑</el-button>
-            <el-button @click="handleStartFrpc(scope.row)" class="btn-green">启动</el-button>
-            <el-button @click="handleStopFrpc(scope.row)" class="btn-red">停止</el-button>
-            <el-button @click="handleFetchLogs(scope.row)" class="btn-outline">日志</el-button>
-            <el-button @click="handleDeleteConfig(scope.row.id, scope.row.index)" class="btn-gray">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </el-card>
+         <!-- 配置卡片列表 -->
+         <el-card  style="margin-left: 0">
+           <el-table :data="frpcList">
+             <el-table-column width="150" prop="serverAddr" label="frps IP 地址" />
+             <el-table-column width="100" prop="serverPort" label="frps 端口" />
+             <el-table-column width="120" prop="localIp" label="本地服务 IP" />
+             <el-table-column width="100" prop="localPort" label="本地端口" />
+             <el-table-column width="100" prop="remotePort" label="远程端口" />
+             <el-table-column width="90" label="状态">
+               <template v-slot="scope">
+                 <span v-if="scope.row.status === '运行中'">{{ scope.row.status }}</span>
+                 <span v-else-if="scope.row.status === '未运行'">{{ scope.row.status }}</span>
+                 <span v-else>{{ scope.row.status }}</span>
+               </template>
+             </el-table-column>
+             <el-table-column label="操作">
+               <template v-slot="scope">
+                 <el-button @click="handleEditConfig(scope.row)" class="btn-primary">编辑</el-button>
+                 <el-button @click="handleStartFrpc(scope.row)" class="btn-green">启动</el-button>
+                 <el-button @click="handleStopFrpc(scope.row)" class="btn-red">停止</el-button>
+                 <el-button @click="handleFetchLogs(scope.row)" class="btn-outline">日志</el-button>
+                 <el-button @click="handleDeleteConfig(scope.row.id, scope.row.index)" class="btn-gray">删除</el-button>
+               </template>
+             </el-table-column>
+           </el-table>
+         </el-card>
+       </div>
 
-    <el-card style="width: 90vw">
-      <el-table table-layout="auto"  style="margin-top: 20px" :data="frpcList">
-        <el-table-column prop="logs" label="日志" />
-      </el-table>
-    </el-card>
-  </div>
+      <el-card>
+        <el-table :data="frpcList">
+          <el-table-column prop="logs" label="日志" />
+        </el-table>
+      </el-card>
+    </el-main>
+
 </template>
 
 <script setup>
@@ -87,6 +93,20 @@ import {
   deleteConfig,
   updateConfig,
 } from '../api/base.js'
+import  scheduledTasks  from '../util/utils/scheduled.js';
+import {ElMessage} from "element-plus";
+import {getLang,getTranslate} from '../i18n/language.js'
+const lang = getLang('zh','home')
+
+onMounted(() => {
+  loadConfigs()
+  const scheduler = scheduledTasks();
+  scheduler.add(() => {
+    refreshStatus()
+  }, 30000);
+  scheduler.start();
+
+})
 
 const form = reactive({
   serverAddr: '',
@@ -108,28 +128,26 @@ const loadConfigs = async () => {
       status: '未知',
       logs: ''
     }))
+    await refreshStatus()
   } catch (e) {
-    alert('加载配置失败')
+    console.log(e)
   }
 }
 
-onMounted(() => {
-  loadConfigs()
-})
+
+
+
+
 
 const handleAddConfig = async () => {
   if (!form.serverAddr || !form.localIp || !form.remotePort) {
-    alert('请填写完整配置')
+    ElMessage.info('请填写完整的配置信息')
     return
   }
   try {
-    if (form.id===null){
-      const config = await addConfig({ ...form })
-      frpcList.value.push({ ...config, status: '未运行', logs: '' })
-    }else{
-      const config = await updateConfig(form.id, { ...form })
-    }
-    await refreshStatus()
+      const config = await addConfig({...form})
+      frpcList.value.push({...config, status: '未运行', logs: ''})
+      await refreshStatus()
   } catch (e) {
     alert('添加失败')
   }
@@ -156,7 +174,7 @@ const handleStopFrpc = async (config) => {
 const handleFetchLogs = async (config) => {
   try {
     const res = await getLogs(config.remotePort)
-    config.logs = res.logs || ''
+    config.logs = res || ''
   } catch {
     config.logs = '日志获取失败'
   }

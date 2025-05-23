@@ -1,13 +1,12 @@
 [
   {
-    "id": "030a02ae-b8b5-452d-a8b9-4bb1a561af3c",
+    "id": "e31e700a-21c1-4859-9c9f-d0a7e95c6a13",
     "serverAddr": "frp.zorange.online",
     "serverPort": "7000",
     "token": "orange",
     "localIp": "localhost",
-    "localPort": "5173",
+    "localPort": "3000",
     "remotePort": "7001",
-    "type": "tcp",
-    "value": {}
+    "type": "tcp"
   }
 ]
