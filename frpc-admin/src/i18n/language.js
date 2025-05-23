@@ -8,9 +8,9 @@ import en from "./en.js";
      en
  }
 
+ const langcode = localStorage.getItem('lang') || 'zh';
 
-
-export const getLang = (langcode,router) => {
+export const getLang = (router) => {
    return lang[langcode][router]
 }
 
