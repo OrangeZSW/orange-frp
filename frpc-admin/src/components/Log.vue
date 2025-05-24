@@ -1,18 +1,28 @@
 <script setup>
 import {onMounted, ref} from "vue";
-import {useStore} from "../util/pinia/store.js";
+import {getLogs} from '../api/base.js'
+import scheduledTasks from '../util/utils/scheduled.js'
+import router from "../util/router/router.js";
 
-// 从 Pinia store 获取日志
-const logs = ref(useStore.log);  // 从 Pinia store 获取日志
+const logs = ref([])
 
 // 如果你希望在组件加载时从 store 获取数据并动态更新
 onMounted(() => {
-  logs.value = useStore.log;
+  scheduledTasks().add(setLogs, 5000)
 });
+
+const setLogs = () => {
+  const remotePort = router.currentRoute.value.params.remotePort
+  getLogs(remotePort).then(res => {
+    logs.value = res
+  })
+}
+
+
 </script>
 
 <template>
-  <el-card style="font-weight: bold; padding: 20px;">
+  <el-card style="font-weight: bold; padding: 20px;min-width: 50vw;min-height: 50vh">
     <!-- 这里如果没有日志内容，显示一个默认提示 -->
     <div v-if="logs!=null && logs.length === 0" class="no-logs">
       <el-text>没有日志内容</el-text>
