@@ -4,15 +4,7 @@ import {defineStore} from 'pinia'
 // (比如 `useUserStore`，`useCartStore`，`useProductStore`)
 // 第一个参数是你的应用中 Store 的唯一 ID。
 export const useStore = defineStore('orange', {
-    state: () => ({
-        log: ""
-    }),
-    getters: {
-        getLog: (state) => state.log,
-    },
-    setters: {
-        setLog: (state, value) => {
-            state.log = value
-        },
-    },
+    state: () => ({}),
+    getters: {},
+    setters: {},
 })

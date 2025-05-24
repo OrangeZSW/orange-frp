@@ -4,20 +4,17 @@ import {onMounted, reactive, ref} from 'vue'
 import {addConfig, deleteConfig, getConfigs, getLogs, getStatus, startFrpc, stopFrpc,} from '../api/base.js'
 import scheduledTasks from '../util/utils/scheduled.js';
 import {ElMessage, ElMessageBox} from "element-plus";
-import {getTranslate} from '../i18n/language.js'
+import {getLang, getTranslate} from '../i18n/language.js'
 import {Orange} from "@element-plus/icons-vue";
 import router from "../util/router/router.js";
-import {useStore} from "../util/pinia/store.js";
 
-
+const lang = getLang('home')
 onMounted(() => {
-  localStorage.setItem('lang', 'zh')
   loadConfigs()
   const scheduler = scheduledTasks();
   scheduler.add(() => {
     refreshStatus()
   }, 30000);
-  scheduler.start();
 
 })
 
@@ -120,8 +117,7 @@ const refreshStatus = async () => {
 
 
 const lookLogs = async (config) => {
-  useStore.log = await getLogs(config.remotePort)
-  await router.push("/log")
+  await router.push(`/log/${config.remotePort}`)
 }
 </script>
 
