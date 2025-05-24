@@ -1,6 +1,4 @@
-import {reactive} from 'vue'; // 如果是 Vue 3
-
-const tasks = reactive([]);
+const tasks = []
 
 const scheduledTasks = () => {
     const add = (task, time) => {
